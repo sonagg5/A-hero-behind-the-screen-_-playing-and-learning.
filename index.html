@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> بطل خلف الشاشه يلعب ويتعلم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- ربط مكتبات Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfP_3fA1K-uWkB3tF6HHIwAk-rUd0e338",
+            authDomain: "hasssa-138ec.firebaseapp.com",
+            projectId: "hasssa-138ec",
+            storageBucket: "hasssa-138ec.firebasestorage.app",
+            messagingSenderId: "469051904559",
+            appId: "1:469051904559:web:414d4343de8706e709ecda",
+            measurementId: "G-2DHN8EXF24"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+        
+        // حفظ قاعدة البيانات للاستخدام العام في المشروع
+        window.db = db;
+    </script>
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #0f172a;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --accent: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
+
+        .navbar { background: #ffffff; padding: 15px 8%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .nav-links { display: flex; gap: 10px; align-items: center; }
+
+        .btn { background-color: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px; transition: all 0.2s; text-decoration: none; display: inline-block; }
+        .btn:hover { background-color: var(--primary-hover); }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .btn-success { background-color: var(--success); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-warning { background-color: var(--accent); color: white; }
+        .btn-disabled { background-color: #94a3b8 !important; cursor: not-allowed; }
+
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; flex: 1; }
+        .section-header { margin-bottom: 25px; }
+        .section-title { font-size: 26px; font-weight: 800; color: var(--secondary); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+        .course-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid var(--border); display: flex; flex-direction: column; position: relative; }
+        .course-img { width: 100%; height: 180px; object-fit: cover; background: #e2e8f0; }
+        .course-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .course-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .course-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 15px; line-height: 1.6; flex-grow: 1; }
+
+        .course-price-box { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .old-price { text-decoration: line-through; color: var(--text-muted); font-size: 15px; }
+        .sale-price { color: var(--danger); font-size: 19px; font-weight: bold; }
+        .normal-price { color: var(--primary); font-size: 19px; font-weight: bold; }
+
+        .player-layout { display: grid; grid-template-columns: 2.5fr 1fr; gap: 25px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        @media (max-width: 900px) { .player-layout { grid-template-columns: 1fr; } }
+
+        .lesson-tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--border); margin-bottom: 20px; padding-bottom: 10px; overflow-x: auto; }
+        .tab-btn { background: none; border: none; padding: 10px 18px; font-size: 15px; font-weight: 700; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        .video-select-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .video-card-item { background: var(--bg); border: 1px solid var(--border); padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .video-card-item:hover { border-color: var(--primary); }
+        .video-card-item.active { border-color: var(--primary); background: #e0e7ff; }
+
+        .playlist { background: var(--bg); border-radius: 12px; padding: 12px; max-height: 550px; overflow-y: auto; }
+        .playlist-item { padding: 12px 15px; background: white; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .playlist-item.active { background: #e0e7ff; border-color: var(--primary); color: var(--primary); font-weight: bold; }
+        .playlist-item.locked { opacity: 0.6; cursor: not-allowed; background: #f1f5f9; }
+
+        .attachments-box { margin-top: 15px; }
+        .attachment-item { display: flex; flex-direction: column; gap: 6px; background: var(--bg); padding: 14px 16px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
+        .attachment-header { display: flex; justify-content: space-between; align-items: center; }
+
+        .quiz-select-card { background: var(--bg); border: 1px solid var(--border); padding: 16px; border-radius: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+        .hidden { display: none !important; }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
+
+        .auth-card { background: white; padding: 30px; border-radius: 16px; max-width: 450px; margin: 40px auto; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; }
+        input, textarea, select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 14px; border-bottom: 1px solid var(--border); text-align: right; font-size: 14px; }
+        th { background: #f8fafc; font-weight: 700; }
+
+        footer { background: white; padding: 20px; text-align: center; border-top: 1px solid var(--border); margin-top: auto; color: var(--text-muted); font-size: 13px; }
+        .user-badge { background: #e0e7ff; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"> بطل خلف الشاشه يلعب ويتعلم</div>
+        <div class="nav-links">
+            <button class="btn btn-outline" onclick="showSection('courses')">الكورسات المتاحة</button>
+            <button class="btn btn-outline user-only hidden" onclick="showSection('myCourses')">كورساتي المشترك بها</button>
+            <span id="userDisplay" class="user-badge hidden"></span>
+            <button id="authBtn" class="btn btn-success" onclick="showSection('login')">تسجيل الدخول</button>
+            <button id="registerNavBtn" class="btn btn-outline" onclick="showSection('register')">إنشاء حساب</button>
+            <button id="logoutBtn" class="btn btn-danger hidden" onclick="logout()">خروج</button>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <section id="loginSection" class="auth-card hidden">
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary);">تسجيل الدخول</h2>
+            <form onsubmit="loginUser(event)">
+                <div class="form-group">
+                    <label>رقم هاتف الطالب</label>
+                    <input type="tel" id="loginPhone" required placeholder="أدخل رقم الهاتف">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="loginPassword" required placeholder="أدخل كلمة المرور">
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">دخول</button>
+            </form>
+            <p style="text-align: center; margin-top: 15px; font-size: 13px;">ليس لديك حساب؟ <a href="#" onclick="showSection('register'); return false;" style="color: var(--primary); font-weight: bold;">إنشاء حساب جديد</a></p>
+        </section>
+
+        <section id="registerSection" class="auth-card hidden">
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary);">إنشاء حساب طالب جديد</h2>
+            <form onsubmit="registerUser(event)">
+                <div class="form-group">
+                    <label>اسم الطالب بالكامل</label>
+                    <input type="text" id="regName" required placeholder="أدخل الاسم الثلاثي/الرباعي">
+                </div>
+                <div class="form-group">
+                    <label>رقم هاتف الطالب</label>
+                    <input type="tel" id="regPhone" required placeholder="رقم الموبايل الخاص بك">
+                </div>
+                <div class="form-group">
+                    <label>رقم هاتف ولي الأمر</label>
+                    <input type="tel" id="regParentPhone" required placeholder="رقم موبايل ولي الأمر">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="regPassword" required placeholder="كلمة المرور">
+                </div>
+                <div class="form-group">
+                    <label>تأكيد كلمة المرور</label>
+                    <input type="password" id="regConfirmPassword" required placeholder="أعد كتابة كلمة المرور">
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">إرسال الطلب للإنشاء</button>
+            </form>
+            <p style="text-align: center; margin-top: 15px; font-size: 13px;">لديك حساب بالفعل؟ <a href="#" onclick="showSection('login'); return false;" style="color: var(--primary); font-weight: bold;">تسجيل الدخول</a></p>
+        </section>
+
+        <section id="coursesSection">
+            <div class="section-header"><h2 class="section-title">استكشف جميع الكورسات</h2></div>
+            <div class="grid" id="coursesGrid"></div>
+        </section>
+
+        <section id="myCoursesSection" class="hidden">
+            <div class="section-header"><h2 class="section-title">الكورسات المشترك بها</h2></div>
+            <div class="grid" id="myCoursesGrid"></div>
+        </section>
+
+        <section id="playerSection" class="hidden">
+            <button class="btn btn-outline" style="margin-bottom: 20px;" onclick="showSection('myCourses')">← العودة لكورساتي</button>
+            <div class="player-layout">
+                <div>
+                    <h2 id="lessonTitle" style="font-size: 22px;">عنوان الحصة</h2>
+                    <p id="lessonDesc" style="color: var(--text-muted); margin-top: 6px; margin-bottom: 15px; line-height: 1.6;"></p>
+
+                    <div class="lesson-tabs">
+                        <button class="tab-btn active" onclick="switchLessonTab('videos', this)">📹 الفيديوهات</button>
+                        <button class="tab-btn" onclick="switchLessonTab('tools', this)">📁 الأدوات والملحقات</button>
+                        <button class="tab-btn" onclick="switchLessonTab('quiz', this)">📝 الامتحانات الإلكترونية والإجابات</button>
+                    </div>
+
+                    <div id="tabVideos" class="tab-content">
+                        <h4 style="margin-bottom: 12px;">اختر الفيديو للمشاهدة:</h4>
+                        <div id="videoSelectGrid" class="video-select-grid"></div>
+                        <div id="activeVideoPlayerContainer"></div>
+                    </div>
+
+                    <div id="tabTools" class="tab-content hidden">
+                        <div class="attachments-box">
+                            <h3>📁 ملحقات وأدوات الحصة</h3>
+                            <div id="attachmentsList"></div>
+                        </div>
+                    </div>
+
+                    <div id="tabQuiz" class="tab-content hidden">
+                        <h4 style="margin-bottom: 12px;">امتحانات الحصة (ملفات HTML):</h4>
+                        <div id="quizListContainer"></div>
+                        
+                        <div id="quizContainerBox" class="hidden" style="margin-top: 20px; background: white; padding: 20px; border-radius: 12px; border: 2px solid var(--primary);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 id="activeQuizTitle" style="color: var(--primary);">امتحان الحصة</h3>
+                                <button class="btn btn-outline" onclick="closeActiveQuizFrame()">إغلاق الامتحان ✕</button>
+                            </div>
+                            <iframe id="htmlQuizFrame" style="width: 100%; height: 600px; border: 1px solid var(--border); border-radius: 8px;"></iframe>
+                            
+                            <div style="margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                                <h4>تسجيل النتيجة بعد الانتهاء من الامتحان:</h4>
+                                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">أدخل درجتك أو النسبة التي حصلت عليها في الامتحان (من 0 إلى 100%):</p>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="number" id="manualQuizScoreInput" min="0" max="100" placeholder="مثال: 85" style="max-width: 150px;">
+                                    <button class="btn btn-success" onclick="submitHtmlQuizScore()">حفظ وتسجيل النتيجة</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="studentAnswerFileBox" class="hidden" style="margin-top: 25px; background: #f0fdf4; border: 2px dashed var(--success); padding: 20px; border-radius: 12px;">
+                            <h4 style="color: var(--success); margin-bottom: 8px;">✅ مبروك! لقد تجاوزت نسبة 50% في الامتحان</h4>
+                            <p style="font-size: 14px; margin-bottom: 12px;">تم إتاحة ملف الإجابة النموذجية لك نظراً لتخطي نسبة النجاح المطلوبة:</p>
+                            <div id="studentAnswerDownloadLinkContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 15px;">قائمة حصص الكورس</h3>
+                    <div class="playlist" id="playlist"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="adminSection" class="hidden" style="background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="color: var(--primary);">لوحة تحكم المسؤول (الأدمن)</h2>
+                <button class="btn btn-danger" onclick="showSection('courses')">خروج من التحكم</button>
+            </div>
+
+            <div style="background: var(--bg); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border);">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">⚙️ إعدادات المنصة وحساب الأدمن</h3>
+                <form onsubmit="saveAdminSettings(event)" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px;">
+                    <div>
+                        <label>اسم المستخدم الأدمن</label>
+                        <input type="text" id="settingAdminUser" required>
+                    </div>
+                    <div>
+                        <label>كلمة مرور الأدمن</label>
+                        <input type="text" id="settingAdminPass" required>
+                    </div>
+                    <div>
+                        <label>رقم محفظة التحويل (الشحن)</label>
+                        <input type="text" id="settingPaymentPhone" required>
+                    </div>
+                    <div>
+                        <label>رقم التواصل للدعم</label>
+                        <input type="text" id="settingSupportPhone" required>
+                    </div>
+                    <div>
+                        <label>عدد محاولات الامتحانات الافتراضي</label>
+                        <input type="number" id="settingDefaultAttempts" min="1" required>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <button type="submit" class="btn btn-success">حفظ الإعدادات</button>
+                    </div>
+                </form>
+            </div>
+
+            <div style="background: var(--bg); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border);">
+                <h3 style="color: var(--accent); margin-bottom: 12px;">👤 طلبات تسجيل الطلاب الجديدة المعلقة</h3>
+                <table style="width: 100%;">
+                    <thead>
+                        <tr><th>اسم الطالب</th><th>رقم الطالب</th><th>رقم ولي الأمر</th><th>الإجراء</th></tr>
+                    </thead>
+                    <tbody id="adminUserRequestsTable"></tbody>
+                </table>
+            </div>
+
+            <div style="background: var(--bg); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border);">
+                <h3 style="color: var(--primary); margin-bottom: 12px;">📊 تفاصيل الطلاب وإمكانية فتح فرص ومحاولات إضافية</h3>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الطالب</th>
+                                <th>الهاتف / ولي الأمر</th>
+                                <th>الكورسات المشترك بها</th>
+                                <th>إدارة المحاولات وفتح الفرص</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminStudentsOverviewTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="background: var(--bg); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border);">
+                <h3 style="color: var(--danger); margin-bottom: 12px;">🗑️ إدارة وحذف الكورسات</h3>
+                <div id="adminCoursesManageList"></div>
+            </div>
+
+            <div style="background: var(--bg); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                <h3>➕ إضافة كورس جديد</h3>
+                <br>
+                <form id="addCourseForm" onsubmit="addCourse(event)">
+                    <div class="form-group"><label>عنوان الكورس</label><input type="text" id="newCTitle" required></div>
+                    <div class="form-group"><label>وصف الكورس</label><textarea id="newCDesc" rows="2" required></textarea></div>
+                    <div class="form-group"><label>السعر الأصلي (ج.م)</label><input type="number" id="newCPrice" required></div>
+                    <div class="form-group"><label>سعر العرض (اختياري)</label><input type="number" id="newCOfferPrice" placeholder="مثال: 350"></div>
+                    <div class="form-group"><label>صورة الغلاف</label><input type="file" id="newCImgFile" accept="image/*"></div>
+                    <button type="submit" class="btn btn-success">إضافة الكورس</button>
+                </form>
+            </div>
+
+            <div style="background: var(--bg); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                <h3>🎬 إضافة حصة جديدة (ملف HTML للامتحان + ملف HTML للإجابة)</h3>
+                <br>
+                <form id="lessonForm" onsubmit="addLesson(event)">
+                    <div class="form-group">
+                        <label>اختر الكورس</label>
+                        <select id="lessonCourseSelect" required></select>
+                    </div>
+                    <div class="form-group"><label>عنوان الحصة</label><input type="text" id="lTitle" required></div>
+                    <div class="form-group"><label>وصف الحصة</label><textarea id="lDesc" rows="2"></textarea></div>
+
+                    <div style="border: 1px dashed var(--primary); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4>📹 فيديوهات الحصة</h4>
+                        <div id="videoInputsContainer"></div>
+                        <button type="button" class="btn btn-outline" onclick="addVideoInput('videoInputsContainer')">➕ إضافة فيديو آخر</button>
+                    </div>
+
+                    <div style="border: 1px dashed var(--primary); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4>📁 ملحقات وأدوات الحصة</h4>
+                        <div class="form-group">
+                            <label>وصف ملف PDF</label>
+                            <input type="text" id="pdfDesc" placeholder="وصف ملخص الـ PDF" style="margin-bottom:6px;">
+                            <input type="file" id="pdfFile" accept="application/pdf">
+                        </div>
+                        <div class="form-group">
+                            <label>وصف الملف الإضافي</label>
+                            <input type="text" id="docDesc" placeholder="وصف الملف الإضافي" style="margin-bottom:6px;">
+                            <input type="file" id="docFile">
+                        </div>
+                    </div>
+
+                    <div style="border: 1px dashed var(--accent); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4 style="color: var(--accent);">📝 امتحانات الحصة (رفع ملفات HTML مباشرة)</h4>
+                        <div id="quizzesBuilderContainer"></div>
+                        <button type="button" class="btn btn-outline" style="margin-top: 10px;" onclick="addHtmlQuizBlock('quizzesBuilderContainer')">➕ إضافة امتحان HTML آخر</button>
+                    </div>
+
+                    <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">حفظ وإضافة الحصة</button>
+                </form>
+            </div>
+
+            <div style="background: var(--bg); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                <h3>✏️ تعديل أو حذف الحصص</h3>
+                <div class="form-group">
+                    <label>اختر الكورس</label>
+                    <select id="editCourseSelect" onchange="populateEditLessonSelect()"></select>
+                </div>
+                <div class="form-group">
+                    <label>اختر الحصة للتعديل أو الحذف</label>
+                    <select id="editLessonSelect"></select>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn btn-warning" onclick="openEditLessonModal()">✋ فتح نافذة التعديل الشاملة</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteSelectedLesson()">🗑️ حذف الحصة المحددة</button>
+                </div>
+            </div>
+
+            <h3>طلبات الاشتراك المعلقة في الكورسات</h3>
+            <table>
+                <thead>
+                    <tr><th>اسم الطالب</th><th>رقم المحفظة</th><th>الكورس</th><th>الإجراء</th></tr>
+                </thead>
+                <tbody id="adminRequestsTable"></tbody>
+            </table>
+        </section>
+    </div>
+
+    <div id="editLessonModal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="color: var(--primary); margin-bottom: 15px;">✋ تعديل الحصة</h3>
+            <form onsubmit="saveLessonEdits(event)">
+                <input type="hidden" id="editCourseId">
+                <input type="hidden" id="editLessonIdx">
+
+                <div class="form-group"><label>عنوان الحصة</label><input type="text" id="editLTitle" required></div>
+                <div class="form-group"><label>وصف الحصة</label><textarea id="editLDesc" rows="2"></textarea></div>
+
+                <div style="border: 1px dashed var(--primary); padding: 15px; border-radius: 8px; margin: 15px 0; background: #fafafa;">
+                    <h4>📁 تعديل الملفات المرفقة</h4>
+                    <div class="form-group">
+                        <label>وصف ملف PDF</label>
+                        <input type="text" id="editPdfDesc">
+                        <input type="file" id="editPdfFile" accept="application/pdf" style="margin-top: 5px;">
+                    </div>
+                    <div class="form-group">
+                        <label>وصف الملف الإضافي</label>
+                        <input type="text" id="editDocDesc">
+                        <input type="file" id="editDocFile" style="margin-top: 5px;">
+                    </div>
+                </div>
+
+                <div style="border: 1px dashed var(--primary); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4>📹 تعديل الفيديوهات</h4>
+                    <div id="editVideoContainer"></div>
+                    <button type="button" class="btn btn-outline" style="margin-top:10px;" onclick="addVideoInput('editVideoContainer')">➕ إضافة فيديو جديد</button>
+                </div>
+
+                <div style="border: 1px dashed var(--accent); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="color:var(--accent);">📝 تعديل امتحانات HTML وملفات الإجابة</h4>
+                    <div id="editQuizzesContainer"></div>
+                    <button type="button" class="btn btn-outline" style="margin-top:10px;" onclick="addHtmlQuizBlock('editQuizzesContainer')">➕ إضافة امتحان HTML جديد</button>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="submit" class="btn btn-success" style="flex:1;">حفظ كافة التعديلات</button>
+                    <button type="button" class="btn btn-outline" onclick="closeEditModal()">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="subModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>تأكيد الاشتراك والدفع</h3>
+            <p style="margin: 12px 0; font-size: 14px; color: var(--text-muted);">
+                تحويل المبلغ عبر المحفظة إلى: <strong id="modalPaymentPhone" style="color: var(--danger); font-size: 18px;">01100000000</strong>
+            </p>
+            <form onsubmit="submitSubscription(event)">
+                <input type="hidden" id="modalCourseId">
+                <div class="form-group"><label>الاسم بالكامل</label><input type="text" id="subName" required readonly></div>
+                <div class="form-group"><label>رقم المحفظة المحول منها</label><input type="tel" id="subPhone" required></div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">إرسال الطلب</button>
+                    <button type="button" class="btn btn-outline" onclick="closeSubModal()">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>جميع الحقوق محفوظة © منصة بطل خلف الشاشه يلعب ويتعلم 2026</p>
+        <span onclick="openAdminModal()" style="cursor: pointer; opacity: 0.2; font-size: 12px; display: inline-block; margin-top: 5px;">🔒</span>
+    </footer>
+
+<script>
+    let currentActiveQuizIndex = null;
+    let currentCourseId = null;
+    let currentLessonIndex = 0;
+    let selectedVideoIndex = -1;
+
+    let appSettings = JSON.parse(localStorage.getItem('app_settings_v1')) || {
+        adminUser: "hassan",
+        adminPass: "1231234",
+        paymentPhone: "01100000000",
+        supportPhone: "01000000000",
+        defaultAttempts: 3
+    };
+
+    let users = JSON.parse(localStorage.getItem('app_users_v1')) || [];
+    let currentUser = JSON.parse(localStorage.getItem('app_current_user')) || null;
+
+    let courses = JSON.parse(localStorage.getItem('app_courses_v16')) || [
+        {
+            id: 1,
+            title: "كورس البرمجة الشامل",
+            desc: "شرح البرمجة مع امتحانات HTML وملفات الإجابة المخفية.",
+            price: 500, offerPrice: 350,
+            img: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600",
+            lessons: [
+                {
+                    title: "الحصة الأولى: المدخل والأساسيات",
+                    desc: "شرح مفصل مع الفيديوهات والامتحان الإلكتروني.",
+                    videos: [
+                        { name: "الفيديو الأول: المقدمة ونشأة لغات البرمجة", desc: "مدخل البرمجة الأساسية.", url: "https://www.w3schools.com/html/mov_bbb.mp4" }
+                    ],
+                    pdf: null, pdfDesc: "ملخص أهم المصطلحات البرمجية",
+                    doc: null, docDesc: "ملف التمارين",
+                    quizzes: [
+                        {
+                            title: "الاختبار الأول: أساسيات البرمجة (HTML)",
+                            desc: "امتحان تفاعلي عبر ملف HTML.",
+                            htmlUrl: null,
+                            answerFile: null,
+                            answerFileDesc: "ملف الإجابة النموذجية الحصري"
+                        }
+                    ]
+                }
+            ]
+        }
+    ];
+
+    let subscriptions = JSON.parse(localStorage.getItem('app_subscriptions')) || [];
+    let studentProgress = JSON.parse(localStorage.getItem('student_progress')) || {};
+    let studentAttempts = JSON.parse(localStorage.getItem('student_attempts')) || {};
+    let studentLastLesson = JSON.parse(localStorage.getItem('student_last_lesson')) || {};
+
+    window.onload = function() {
+        updateAuthUI();
+        renderCourses();
+        renderMyCourses();
+        populateCourseSelects();
+        renderAdminTables();
+        renderAdminCoursesManageList();
+        addVideoInput('videoInputsContainer');
+        addHtmlQuizBlock('quizzesBuilderContainer');
+        loadAdminSettings();
+    };
+
+    document.addEventListener('keydown', e => { if(e.key === "F9") openAdminModal(); });
+
+    function saveState() {
+        localStorage.setItem('app_courses_v16', JSON.stringify(courses));
+        localStorage.setItem('app_subscriptions', JSON.stringify(subscriptions));
+        localStorage.setItem('student_progress', JSON.stringify(studentProgress));
+        localStorage.setItem('student_attempts', JSON.stringify(studentAttempts));
+        localStorage.setItem('student_last_lesson', JSON.stringify(studentLastLesson));
+        localStorage.setItem('app_users_v1', JSON.stringify(users));
+        localStorage.setItem('app_current_user', JSON.stringify(currentUser));
+        localStorage.setItem('app_settings_v1', JSON.stringify(appSettings));
+    }
+
+    function loadAdminSettings() {
+        document.getElementById('settingAdminUser').value = appSettings.adminUser;
+        document.getElementById('settingAdminPass').value = appSettings.adminPass;
+        document.getElementById('settingPaymentPhone').value = appSettings.paymentPhone;
+        document.getElementById('settingSupportPhone').value = appSettings.supportPhone;
+        document.getElementById('settingDefaultAttempts').value = appSettings.defaultAttempts || 3;
+        document.getElementById('modalPaymentPhone').innerText = appSettings.paymentPhone;
+    }
+
+    function saveAdminSettings(e) {
+        e.preventDefault();
+        appSettings.adminUser = document.getElementById('settingAdminUser').value.trim();
+        appSettings.adminPass = document.getElementById('settingAdminPass').value.trim();
+        appSettings.paymentPhone = document.getElementById('settingPaymentPhone').value.trim();
+        appSettings.supportPhone = document.getElementById('settingSupportPhone').value.trim();
+        appSettings.defaultAttempts = parseInt(document.getElementById('settingDefaultAttempts').value) || 3;
+        saveState();
+        loadAdminSettings();
+        alert("تم حفظ إعدادات النظام وحساب الأدمن بنجاح!");
+    }
+
+    function updateAuthUI() {
+        const uDisplay = document.getElementById('userDisplay');
+        const authBtn = document.getElementById('authBtn');
+        const regBtn = document.getElementById('registerNavBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userOnlyBtns = document.querySelectorAll('.user-only');
+
+        if (currentUser) {
+            uDisplay.innerText = `👤 ${currentUser.name}`;
+            uDisplay.classList.remove('hidden');
+            authBtn.classList.add('hidden');
+            regBtn.classList.add('hidden');
+            logoutBtn.classList.remove('hidden');
+            userOnlyBtns.forEach(b => b.classList.remove('hidden'));
+        } else {
+            uDisplay.classList.add('hidden');
+            authBtn.classList.remove('hidden');
+            regBtn.classList.remove('hidden');
+            logoutBtn.classList.add('hidden');
+            userOnlyBtns.forEach(b => b.classList.add('hidden'));
+        }
+    }
+
+    function registerUser(e) {
+        e.preventDefault();
+        const name = document.getElementById('regName').value.trim();
+        const phone = document.getElementById('regPhone').value.trim();
+        const parentPhone = document.getElementById('regParentPhone').value.trim();
+        const pass = document.getElementById('regPassword').value;
+        const confirmPass = document.getElementById('regConfirmPassword').value;
+
+        if (pass !== confirmPass) {
+            alert("كلمة المرور وتأكيد كلمة المرور غير متطابقين!");
+            return;
+        }
+
+        if (users.some(u => u.phone === phone)) {
+            alert("رقم الهاتف مسجل بالفعل مسبقاً!");
+            return;
+        }
+
+        users.push({
+            id: Date.now(),
+            name,
+            phone,
+            parentPhone,
+            pass,
+            status: 'pending'
+        });
+
+        saveState();
+        alert("تم إرسال طلب إنشاء الحساب بنجاح! ينتظر موافقة الأدمن.");
+        showSection('login');
+    }
+
+    function loginUser(e) {
+        e.preventDefault();
+        const phone = document.getElementById('loginPhone').value.trim();
+        const pass = document.getElementById('loginPassword').value;
+
+        const user = users.find(u => u.phone === phone && u.pass === pass);
+
+        if (!user) {
+            alert("رقم الهاتف أو كلمة المرور غير صحيحة!");
+            return;
+        }
+
+        if (user.status === 'pending') {
+            alert("حسابك قيد المراجعة والموافقة من قبل الأدمن حالياً!");
+            return;
+        }
+
+        if (user.status === 'rejected') {
+            alert("تم رفض طلب إنشاء حسابك من الأدمن.");
+            return;
+        }
+
+        currentUser = user;
+        saveState();
+        updateAuthUI();
+        alert(`أهلاً بك يا ${user.name}!`);
+        showSection('myCourses');
+    }
+
+    function logout() {
+        currentUser = null;
+        saveState();
+        updateAuthUI();
+        showSection('courses');
+    }
+
+    function showSection(sec) {
+        document.getElementById('coursesSection').classList.add('hidden');
+        document.getElementById('myCoursesSection').classList.add('hidden');
+        document.getElementById('playerSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.add('hidden');
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('registerSection').classList.add('hidden');
+
+        if(sec === 'login') document.getElementById('loginSection').classList.remove('hidden');
+        if(sec === 'register') document.getElementById('registerSection').classList.remove('hidden');
+        if(sec === 'courses') { renderCourses(); document.getElementById('coursesSection').classList.remove('hidden'); }
+        if(sec === 'myCourses') {
+            if(!currentUser) { showSection('login'); return; }
+            renderMyCourses();
+            document.getElementById('myCoursesSection').classList.remove('hidden');
+        }
+        if(sec === 'player') document.getElementById('playerSection').classList.remove('hidden');
+        if(sec === 'admin') {
+            renderAdminTables();
+            renderAdminCoursesManageList();
+            renderAdminUserRequests();
+            renderAdminStudentsOverview();
+            populateCourseSelects();
+            document.getElementById('adminSection').classList.remove('hidden');
+        }
+    }
+
+    function renderCourses() {
+        const grid = document.getElementById('coursesGrid');
+        grid.innerHTML = '';
+        courses.forEach(c => {
+            let isApproved = false;
+            let isPending = false;
+            if (currentUser) {
+                isApproved = subscriptions.some(s => s.userId === currentUser.id && s.courseId === c.id && s.status === 'approved');
+                isPending = subscriptions.some(s => s.userId === currentUser.id && s.courseId === c.id && s.status === 'pending');
+            }
+            let btnAction = `<button class="btn" onclick="openSubModal(${c.id})">اشترك الآن</button>`;
+            if (isApproved) btnAction = `<button class="btn btn-success" onclick="openPlayer(${c.id})">دخول الكورس 🎓</button>`;
+            else if (isPending) btnAction = `<button class="btn btn-disabled" disabled>بانتظار الموافقة</button>`;
+
+            let priceHtml = '';
+            if (c.offerPrice && c.offerPrice > 0 && c.offerPrice < c.price) {
+                priceHtml = `
+                    <div class="course-price-box">
+                        <span class="old-price">${c.price} ج.م</span>
+                        <span class="sale-price">${c.offerPrice} ج.م</span>
+                    </div>
+                `;
+            } else {
+                priceHtml = `
+                    <div class="course-price-box">
+                        <span class="normal-price">${c.price} ج.م</span>
+                    </div>
+                `;
+            }
+
+            grid.innerHTML += `
+                <div class="course-card">
+                    <img src="${c.img || 'https://via.placeholder.com/300'}" class="course-img">
+                    <div class="course-body">
+                        <div class="course-title">${c.title}</div>
+                        <div class="course-desc">${c.desc}</div>
+                        ${priceHtml}
+                        ${btnAction}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function renderMyCourses() {
+        const grid = document.getElementById('myCoursesGrid');
+        grid.innerHTML = '';
+        if(!currentUser) return;
+        const approvedCourseIds = subscriptions.filter(s => s.userId === currentUser.id && s.status === 'approved').map(s => s.courseId);
+        const myCourses = courses.filter(c => approvedCourseIds.includes(c.id));
+
+        if (!myCourses.length) {
+            grid.innerHTML = '<p style="color: var(--text-muted);">لا يوجد كورسات مشترك بها حالياً.</p>';
+            return;
+        }
+
+        myCourses.forEach(c => {
+            grid.innerHTML += `
+                <div class="course-card">
+                    <img src="${c.img || 'https://via.placeholder.com/300'}" class="course-img">
+                    <div class="course-body">
+                        <div class="course-title">${c.title}</div>
+                        <div class="course-desc">${c.desc}</div>
+                        <button class="btn btn-success" onclick="openPlayer(${c.id})">دخول الكورس وبدء التعلم 🚀</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function openSubModal(courseId) {
+        if(!currentUser) {
+            alert("يرجى تسجيل الدخول أولاً للاشتراك!");
+            showSection('login');
+            return;
+        }
+        document.getElementById('modalCourseId').value = courseId;
+        document.getElementById('subName').value = currentUser.name;
+        document.getElementById('subPhone').value = currentUser.phone;
+        document.getElementById('subModal').classList.remove('hidden');
+    }
+
+    function closeSubModal() {
+        document.getElementById('subModal').classList.add('hidden');
+    }
+
+    function submitSubscription(e) {
+        e.preventDefault();
+        const courseId = parseInt(document.getElementById('modalCourseId').value);
+        const phone = document.getElementById('subPhone').value.trim();
+
+        if (subscriptions.some(s => s.userId === currentUser.id && s.courseId === courseId)) {
+            alert("لقد قمت بإرسال طلب اشتراك لهذا الكورس مسبقاً!");
+            closeSubModal();
+            return;
+        }
+
+        subscriptions.push({
+            id: Date.now(),
+            userId: currentUser.id,
+            name: currentUser.name,
+            phone: phone,
+            courseId: courseId,
+            status: 'pending'
+        });
+
+        saveState();
+        closeSubModal();
+        alert("تم إرسال طلب الاشتراك بنجاح! سيتم مراجعته وقبوله قريباً من الأدمن.");
+        renderCourses();
+    }
+
+    function openPlayer(courseId) {
+        if(!currentUser) {
+            alert("يرجى تسجيل الدخول أولاً!");
+            showSection('login');
+            return;
+        }
+        currentCourseId = courseId;
+        const course = courses.find(c => c.id === courseId);
+        if(!course || !course.lessons.length) {
+            alert("لا توجد حصص مضافة بعد!");
+            return;
+        }
+        renderPlaylist(courseId);
+        
+        let lastLIdx = studentLastLesson[`${currentUser.id}_${courseId}`] || 0;
+        if(lastLIdx >= course.lessons.length) lastLIdx = 0;
+        loadLesson(courseId, lastLIdx);
+        showSection('player');
+    }
+
+    function renderPlaylist(courseId) {
+        const course = courses.find(c => c.id === courseId);
+        const playlist = document.getElementById('playlist');
+        playlist.innerHTML = '';
+
+        course.lessons.forEach((l, index) => {
+            let isUnlocked = true;
+            if (index > 0) {
+                let prevLesson = course.lessons[index - 1];
+                if (prevLesson.quizzes && prevLesson.quizzes.length > 0) {
+                    prevLesson.quizzes.forEach((q, qIdx) => {
+                        let quizKey = `${currentUser.id}_${courseId}_${index - 1}_q_${qIdx}`;
+                        let scoreData = studentProgress[quizKey];
+                        if (!scoreData || !scoreData.passed) {
+                            isUnlocked = false;
+                        }
+                    });
+                }
+            }
+
+            let activeClass = (index === currentLessonIndex) ? 'active' : '';
+            let lockClass = (!isUnlocked) ? 'locked' : '';
+            let lockIcon = (!isUnlocked) ? '🔒 ' : '';
+
+            playlist.innerHTML += `
+                <div class="playlist-item ${activeClass} ${lockClass}" onclick="${isUnlocked ? `loadLesson(${courseId}, ${index})` : `alert('يجب اجتياز امتحان الحصة السابقة بنسبة 50% على الأقل لفتح هذه الحصة!')`}">
+                    <span>${lockIcon}${l.title}</span>
+                </div>
+            `;
+        });
+    }
+
+    function loadLesson(courseId, lessonIdx) {
+        currentLessonIndex = lessonIdx;
+        studentLastLesson[`${currentUser.id}_${courseId}`] = lessonIdx;
+        saveState();
+
+        const course = courses.find(c => c.id === courseId);
+        const lesson = course.lessons[lessonIdx];
+
+        document.getElementById('lessonTitle').innerText = lesson.title;
+        document.getElementById('lessonDesc').innerText = lesson.desc || '';
+
+        renderPlaylist(courseId);
+        renderLessonVideos(lesson);
+        renderLessonTools(lesson);
+        renderLessonQuizzes(courseId, lessonIdx, lesson);
+
+        switchLessonTab('videos', document.querySelector('.lesson-tabs button'));
+    }
+
+    function switchLessonTab(tabName, btnEl) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.lesson-tabs button').forEach(el => el.classList.remove('active'));
+
+        if(btnEl) btnEl.classList.add('active');
+
+        if(tabName === 'videos') document.getElementById('tabVideos').classList.remove('hidden');
+        if(tabName === 'tools') document.getElementById('tabTools').classList.remove('hidden');
+        if(tabName === 'quiz') document.getElementById('tabQuiz').classList.remove('hidden');
+    }
+
+    function renderLessonVideos(lesson) {
+        const grid = document.getElementById('videoSelectGrid');
+        const playerCont = document.getElementById('activeVideoPlayerContainer');
+        grid.innerHTML = '';
+        playerCont.innerHTML = '';
+
+        if (!lesson.videos || !lesson.videos.length) {
+            grid.innerHTML = '<p style="color: var(--text-muted);">لا توجد فيديوهات لهذه الحصة.</p>';
+            return;
+        }
+
+        lesson.videos.forEach((v, vIdx) => {
+            grid.innerHTML += `
+                <div class="video-card-item ${vIdx === 0 ? 'active' : ''}" onclick="selectVideo(${vIdx})">
+                    <div>
+                        <strong>▶️ ${v.name}</strong>
+                        <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">${v.desc || ''}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        selectVideo(0);
+    }
+
+    function selectVideo(vIdx) {
+        selectedVideoIndex = vIdx;
+        const course = courses.find(c => c.id === currentCourseId);
+        const lesson = course.lessons[currentLessonIndex];
+        const v = lesson.videos[vIdx];
+
+        document.querySelectorAll('.video-card-item').forEach((el, idx) => {
+            if(idx === vIdx) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+
+        const playerCont = document.getElementById('activeVideoPlayerContainer');
+        playerCont.innerHTML = `
+            <div class="video-wrapper">
+                <video controls controlsList="nodownload" oncontextmenu="return false;" style="width:100%; border-radius:12px;">
+                    <source src="${v.url}" type="video/mp4">
+                    متصفحك لا يدعم عرض الفيديو.
+                </video>
+            </div>
+        `;
+    }
+
+    function renderLessonTools(lesson) {
+        const list = document.getElementById('attachmentsList');
+        list.innerHTML = '';
+
+        let hasContent = false;
+        if (lesson.pdf) {
+            hasContent = true;
+            list.innerHTML += `
+                <div class="attachment-item">
+                    <div class="attachment-header">
+                        <strong>📄 ${lesson.pdfDesc || 'ملف PDF للشرح'}</strong>
+                        <a href="${lesson.pdf}" target="_blank" class="btn" style="padding: 6px 12px; font-size: 12px;">تحميل / عرض</a>
+                    </div>
+                </div>
+            `;
+        }
+        if (lesson.doc) {
+            hasContent = true;
+            list.innerHTML += `
+                <div class="attachment-item">
+                    <div class="attachment-header">
+                        <strong>📎 ${lesson.docDesc || 'ملف إضافي'}</strong>
+                        <a href="${lesson.doc}" target="_blank" class="btn" style="padding: 6px 12px; font-size: 12px;">تحميل / عرض</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        if(!hasContent) {
+            list.innerHTML = '<p style="color: var(--text-muted);">لا توجد ملفات أو ملحقات مضافة لهذه الحصة.</p>';
+        }
+    }
+
+    function renderLessonQuizzes(courseId, lessonIdx, lesson) {
+        const qContainer = document.getElementById('quizListContainer');
+        const answerBox = document.getElementById('studentAnswerFileBox');
+        
+        qContainer.innerHTML = '';
+        answerBox.classList.add('hidden');
+        closeActiveQuizFrame();
+
+        if (!lesson.quizzes || !lesson.quizzes.length) {
+            qContainer.innerHTML = '<p style="color: var(--text-muted);">لا توجد امتحانات مضافة لهذه الحصة.</p>';
+            return;
+        }
+
+        lesson.quizzes.forEach((q, qIdx) => {
+            let quizKey = `${currentUser.id}_${courseId}_${lessonIdx}_q_${qIdx}`;
+            let scoreData = studentProgress[quizKey];
+            let attemptsUsed = studentAttempts[quizKey] || 0;
+            let maxAttempts = currentUser.customAttempts?.[quizKey] ?? (appSettings.defaultAttempts || 3);
+
+            let statusText = `<span style="color: var(--text-muted);">لم يتم أداء الامتحان بعد</span>`;
+
+            if (scoreData) {
+                if (scoreData.passed) {
+                    statusText = `<span style="color: var(--success); font-weight: bold;">✅ ناجح بنسبة ${scoreData.score}%</span>`;
+                } else {
+                    statusText = `<span style="color: var(--danger); font-weight: bold;">❌ راسب بنسبة ${scoreData.score}% (أقل من 50%)</span>`;
+                }
+            }
+
+            let canTry = attemptsUsed < maxAttempts;
+            let btnText = scoreData ? "فتح الامتحان مرة أخرى" : "بدء الامتحان";
+            if (!canTry && (!scoreData || !scoreData.passed)) {
+                btnText = "انتهت المحاولات (تواصل مع الأدمن لفتح محاولات جديدة)";
+            }
+
+            qContainer.innerHTML += `
+                <div class="quiz-select-card">
+                    <div>
+                        <strong>📝 ${q.title}</strong>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-top:2px;">الحالة: ${statusText} | المحاولات: ${attemptsUsed} / ${maxAttempts}</p>
+                    </div>
+                    <div>
+                        ${canTry || (scoreData && scoreData.passed) ? `<button class="btn" onclick="openHtmlQuiz(${courseId}, ${lessonIdx}, ${qIdx})">${btnText}</button>` : `<button class="btn btn-disabled" disabled>${btnText}</button>`}
+                    </div>
+                </div>
+            `;
+        });
+
+        let anyAnswerAvailable = false;
+        let answerHtmlContent = "";
+
+        lesson.quizzes.forEach((q, qIdx) => {
+            let quizKey = `${currentUser.id}_${courseId}_${lessonIdx}_q_${qIdx}`;
+            let scoreData = studentProgress[quizKey];
+            if (scoreData && scoreData.passed && q.answerFile) {
+                anyAnswerAvailable = true;
+                answerHtmlContent += `
+                    <div style="margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                        <strong>📁 ${q.answerFileDesc || ('ملف إجابة: ' + q.title)}</strong><br>
+                        <a href="${q.answerFile}" target="_blank" class="btn btn-success" style="margin-top: 6px; padding: 6px 14px; font-size: 13px;">📥 تحميل ملف الإجابة النموذجية</a>
+                    </div>
+                `;
+            }
+        });
+
+        if (anyAnswerAvailable) {
+            answerBox.classList.remove('hidden');
+            document.getElementById('studentAnswerDownloadLinkContainer').innerHTML = answerHtmlContent;
+        }
+    }
+
+    function openHtmlQuiz(courseId, lessonIdx, qIdx) {
+        currentActiveQuizIndex = qIdx;
+        const course = courses.find(c => c.id === courseId);
+        const q = course.lessons[lessonIdx].quizzes[qIdx];
+
+        if (!q.htmlUrl) {
+            alert("عذراً، لم يتم رفع ملف HTML لهذا الامتحان من قبل الأدمن!");
+            return;
+        }
+
+        document.getElementById('activeQuizTitle').innerText = q.title;
+        document.getElementById('htmlQuizFrame').src = q.htmlUrl;
+        document.getElementById('quizContainerBox').classList.remove('hidden');
+        document.getElementById('manualQuizScoreInput').value = '';
+    }
+
+    function closeActiveQuizFrame() {
+        document.getElementById('quizContainerBox').classList.add('hidden');
+        document.getElementById('htmlQuizFrame').src = '';
+    }
+
+    function submitHtmlQuizScore() {
+        let scoreInput = document.getElementById('manualQuizScoreInput').value;
+        if (scoreInput === "" || isNaN(scoreInput)) {
+            alert("يرجى إدخال درجة صحيحة (من 0 إلى 100)!");
+            return;
+        }
+
+        let score = parseInt(scoreInput);
+        if (score < 0 || score > 100) {
+            alert("الدرجة يجب أن تكون بين 0 و 100!");
+            return;
+        }
+
+        let passed = score >= 50; 
+        let quizKey = `${currentUser.id}_${currentCourseId}_${currentLessonIndex}_q_${currentActiveQuizIndex}`;
+
+        studentProgress[quizKey] = { score, passed };
+        studentAttempts[quizKey] = (studentAttempts[quizKey] || 0) + 1;
+        saveState();
+
+        closeActiveQuizFrame();
+        renderPlaylist(currentCourseId);
+        renderLessonQuizzes(currentCourseId, currentLessonIndex, courses.find(c => c.id === currentCourseId).lessons[currentLessonIndex]);
+
+        if (passed) {
+            alert(`مبروك! تم تسجيل درجتك بنجاح (${score}%). لقد تجاوزت 50% وتم إتاحة ملف الإجابة النموذجية.`);
+        } else {
+            alert(`تم تسجيل درجتك (${score}%). للأسف لم تتجاوز نسبة 50% للنجاح.`);
+        }
+    }
+
+    function openAdminModal() {
+        let u = prompt("أدخل اسم مستخدم الأدمن:");
+        let p = prompt("أدخل كلمة المرور:");
+        if (u === appSettings.adminUser && p === appSettings.adminPass) {
+            showSection('admin');
+        } else {
+            alert("بيانات الأدمن غير صحيحة!");
+        }
+    }
+
+    function renderAdminTables() {
+        const tbody = document.getElementById('adminRequestsTable');
+        tbody.innerHTML = '';
+        if (!subscriptions.length) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">لا توجد طلبات اشتراك حالياً.</td></tr>`;
+            return;
+        }
+
+        subscriptions.forEach(s => {
+            let cObj = courses.find(c => c.id === s.courseId);
+            let cTitle = cObj ? cObj.title : 'كورس غير معروف';
+            let statusBadge = '';
+            if (s.status === 'pending') statusBadge = `<span style="color: var(--accent); font-weight: bold;">معلق</span>`;
+            else if (s.status === 'approved') statusBadge = `<span style="color: var(--success); font-weight: bold;">مقبول</span>`;
+            else statusBadge = `<span style="color: var(--danger); font-weight: bold;">مرفوض</span>`;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${s.name}</td>
+                    <td>${s.phone}</td>
+                    <td>${cTitle}</td>
+                    <td>
+                        ${s.status === 'pending' ? `
+                            <button class="btn btn-success" style="padding: 6px 12px; font-size: 12px;" onclick="updateSub(${s.id}, 'approved')">قبول</button>
+                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="updateSub(${s.id}, 'rejected')">رفض</button>
+                        ` : statusBadge}
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function updateSub(id, status) {
+        const sub = subscriptions.find(s => s.id === id);
+        if(sub) sub.status = status;
+        saveState();
+        renderAdminTables();
+        renderAdminStudentsOverview();
+        renderCourses();
+    }
+
+    function renderAdminUserRequests() {
+        const tbody = document.getElementById('adminUserRequestsTable');
+        tbody.innerHTML = '';
+        const pendingUsers = users.filter(u => u.status === 'pending');
+
+        if (!pendingUsers.length) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">لا توجد طلبات تسجيل طلاب جديدة.</td></tr>`;
+            return;
+        }
+
+        pendingUsers.forEach(u => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${u.name}</td>
+                    <td>${u.phone}</td>
+                    <td>${u.parentPhone}</td>
+                    <td>
+                        <button class="btn btn-success" style="padding: 6px 12px; font-size: 12px;" onclick="updateUserStatus(${u.id}, 'approved')">موافقة</button>
+                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="updateUserStatus(${u.id}, 'rejected')">رفض</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function updateUserStatus(id, status) {
+        const u = users.find(x => x.id === id);
+        if(u) u.status = status;
+        saveState();
+        renderAdminUserRequests();
+        renderAdminStudentsOverview();
+        alert(`تم ${status === 'approved' ? 'قبول' : 'رفض'} حساب الطالب بنجاح!`);
+    }
+
+    function renderAdminStudentsOverview() {
+        const tbody = document.getElementById('adminStudentsOverviewTable');
+        tbody.innerHTML = '';
+        const approvedUsers = users.filter(u => u.status === 'approved');
+
+        if (!approvedUsers.length) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">لا يوجد طلاب مقبولين مسجلين حالياً.</td></tr>`;
+            return;
+        }
+
+        approvedUsers.forEach(u => {
+            let userSubs = subscriptions.filter(s => s.userId === u.id && s.status === 'approved');
+            let subsTitles = userSubs.map(s => {
+                let c = courses.find(x => x.id === s.courseId);
+                return c ? c.title : '';
+            }).join(', ') || 'لا توجد كورسات';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${u.name}</strong></td>
+                    <td>${u.phone} <br><span style="font-size:12px; color:var(--text-muted);">ولي الأمر: ${u.parentPhone}</span></td>
+                    <td>${subsTitles}</td>
+                    <td>
+                        <button class="btn btn-warning" style="font-size:12px; padding:6px 12px;" onclick="grantExtraAttempts(${u.id})">➕ فتح فرص / محاولات إضافية</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function grantExtraAttempts(userId) {
+        let student = users.find(u => u.id === userId);
+        if (!student) return;
+
+        let extra = prompt(`أدخل عدد المحاولات الإضافية الجديدة الممنوحة للطالب (${student.name}):`, "5");
+        if (extra !== null && !isNaN(extra)) {
+            let val = parseInt(extra);
+            if (!student.customAttempts) student.customAttempts = {};
+            studentAttempts = {}; 
+            appSettings.defaultAttempts = Math.max(appSettings.defaultAttempts, val);
+            saveState();
+            alert(`تم منح الطالب محاولات إضافية وتحديث النظام بنجاح!`);
+            renderAdminStudentsOverview();
+        }
+    }
+
+    function renderAdminCoursesManageList() {
+        const container = document.getElementById('adminCoursesManageList');
+        container.innerHTML = '';
+        courses.forEach(c => {
+            container.innerHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border);">
+                    <span><strong>${c.title}</strong> (${c.lessons.length} حصة)</span>
+                    <button class="btn btn-danger" style="padding: 5px 12px; font-size: 12px;" onclick="deleteCourse(${c.id})">حذف الكورس</button>
+                </div>
+            `;
+        });
+    }
+
+    function deleteCourse(cId) {
+        if(confirm("هل أنت متأكد من حذف هذا الكورس نهائياً؟")) {
+            courses = courses.filter(c => c.id !== cId);
+            saveState();
+            renderCourses();
+            renderAdminCoursesManageList();
+            populateCourseSelects();
+            alert("تم حذف الكورس بنجاح!");
+        }
+    }
+
+    function addCourse(e) {
+        e.preventDefault();
+        const title = document.getElementById('newCTitle').value.trim();
+        const desc = document.getElementById('newCDesc').value.trim();
+        const price = parseFloat(document.getElementById('newCPrice').value);
+        const offerPriceVal = document.getElementById('newCOfferPrice').value.trim();
+        const offerPrice = offerPriceVal ? parseFloat(offerPriceVal) : null;
+        const imgFile = document.getElementById('newCImgFile').files[0];
+
+        let imgUrl = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600";
+        if (imgFile) {
+            imgUrl = URL.createObjectURL(imgFile);
+        }
+
+        courses.push({
+            id: Date.now(),
+            title, desc, price, offerPrice, img: imgUrl, lessons: []
+        });
+
+        saveState();
+        document.getElementById('addCourseForm').reset();
+        populateCourseSelects();
+        renderAdminCoursesManageList();
+        renderCourses();
+        alert("تم إضافة الكورس بنجاح!");
+    }
+
+    function populateCourseSelects() {
+        const selects = [document.getElementById('lessonCourseSelect'), document.getElementById('editCourseSelect')];
+        selects.forEach(sel => {
+            if(!sel) return;
+            sel.innerHTML = '';
+            courses.forEach(c => {
+                sel.innerHTML += `<option value="${c.id}">${c.title}</option>`;
+            });
+        });
+        populateEditLessonSelect();
+    }
+
+    function populateEditLessonSelect() {
+        const cSel = document.getElementById('editCourseSelect');
+        const lSel = document.getElementById('editLessonSelect');
+        if(!cSel || !lSel) return;
+        lSel.innerHTML = '';
+        let cId = parseInt(cSel.value);
+        let course = courses.find(c => c.id === cId);
+        if(!course || !course.lessons.length) {
+            lSel.innerHTML = `<option value="">لا توجد حصص في هذا الكورس</option>`;
+            return;
+        }
+        course.lessons.forEach((l, idx) => {
+            lSel.innerHTML += `<option value="${idx}">${l.title}</option>`;
+        });
+    }
+
+    function addVideoInput(containerId, name = '', desc = '', url = '') {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = "form-group video-input-row";
+        div.style.cssText = "background:white; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px;";
+        div.innerHTML = `
+            <label>اسم الفيديو</label>
+            <input type="text" class="vName" value="${name}" placeholder="مثال: الفيديو الأول" required style="margin-bottom:6px;">
+            <label>وصف الفيديو</label>
+            <input type="text" class="vDesc" value="${desc}" placeholder="وصف محتوى الفيديو" style="margin-bottom:6px;">
+            <label>رابط الفيديو (MP4 / رابط مباشر)</label>
+            <input type="url" class="vUrl" value="${url}" placeholder="https://..." required style="margin-bottom:6px;">
+            <button type="button" class="btn btn-danger" style="padding:4px 10px; font-size:12px;" onclick="this.parentElement.remove()">حذف هذا الفيديو</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function addHtmlQuizBlock(containerId, title = '', desc = '', ansDesc = '') {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = "quiz-html-block";
+        div.style.cssText = "background:white; padding:12px; border-radius:8px; border:1px solid var(--accent); margin-bottom:12px;";
+        div.innerHTML = `
+            <div class="form-group">
+                <label>عنوان الامتحان</label>
+                <input type="text" class="qBlockTitle" value="${title}" placeholder="مثال: امتحان الحصة الأولى" required style="margin-bottom:6px;">
+                <label>وصف الامتحان</label>
+                <input type="text" class="qBlockDesc" value="${desc}" placeholder="وصف موجز" style="margin-bottom:6px;">
+                
+                <label style="color: var(--primary); margin-top: 8px;">رفع ملف HTML الخاص بالامتحان</label>
+                <input type="file" class="qBlockHtmlFile" accept=".html" style="margin-bottom:8px;">
+
+                <div style="background: #f8fafc; padding: 10px; border-radius: 8px; margin-top: 8px;">
+                    <h5 style="color: var(--success); margin-bottom: 6px;">📥 رفع ملف HTML للإجابة (يظهر للطالب بعد تجاوز 50%):</h5>
+                    <label>وصف ملف الإجابة</label>
+                    <input type="text" class="qBlockAnswerDesc" value="${ansDesc}" placeholder="مثال: نموذج إجابة الامتحان الأول" style="margin-bottom:6px;">
+                    <label>ملف الإجابة النموذجية (HTML أو PDF)</label>
+                    <input type="file" class="qBlockAnswerFile" style="margin-bottom:6px;">
+                </div>
+            </div>
+            <button type="button" class="btn btn-danger" style="font-size:12px; padding:4px 10px;" onclick="this.parentElement.remove()">حذف هذا الامتحان</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function addLesson(e) {
+        e.preventDefault();
+        const cId = parseInt(document.getElementById('lessonCourseSelect').value);
+        const title = document.getElementById('lTitle').value.trim();
+        const desc = document.getElementById('lDesc').value.trim();
+
+        const pdfFile = document.getElementById('pdfFile').files[0];
+        const pdfDesc = document.getElementById('pdfDesc').value.trim();
+        const docFile = document.getElementById('docFile').files[0];
+        const docDesc = document.getElementById('docDesc').value.trim();
+
+        let pdfUrl = pdfFile ? URL.createObjectURL(pdfFile) : null;
+        let docUrl = docFile ? URL.createObjectURL(docFile) : null;
+
+        let videos = [];
+        document.querySelectorAll('#videoInputsContainer .video-input-row').forEach(row => {
+            videos.push({
+                name: row.querySelector('.vName').value.trim(),
+                desc: row.querySelector('.vDesc').value.trim(),
+                url: row.querySelector('.vUrl').value.trim()
+            });
+        });
+
+        let quizzes = [];
+        const qBlocks = document.querySelectorAll('#quizzesBuilderContainer .quiz-html-block');
+        qBlocks.forEach(block => {
+            let qTitle = block.querySelector('.qBlockTitle').value.trim();
+            let qDesc = block.querySelector('.qBlockDesc').value.trim();
+            let ansDesc = block.querySelector('.qBlockAnswerDesc').value.trim();
+            
+            let htmlFile = block.querySelector('.qBlockHtmlFile').files[0];
+            let htmlUrl = htmlFile ? URL.createObjectURL(htmlFile) : null;
+
+            let ansFile = block.querySelector('.qBlockAnswerFile').files[0];
+            let ansUrl = ansFile ? URL.createObjectURL(ansFile) : null;
+
+            quizzes.push({
+                title: qTitle,
+                desc: qDesc,
+                htmlUrl: htmlUrl,
+                answerFile: ansUrl,
+                answerFileDesc: ansDesc
+            });
+        });
+
+        const course = courses.find(c => c.id === cId);
+        if (course) {
+            course.lessons.push({
+                title, desc, videos, pdf: pdfUrl, pdfDesc, doc: docUrl, docDesc, quizzes
+            });
+            saveState();
+            document.getElementById('lessonForm').reset();
+            document.getElementById('videoInputsContainer').innerHTML = '';
+            document.getElementById('quizzesBuilderContainer').innerHTML = '';
+            addVideoInput('videoInputsContainer');
+            addHtmlQuizBlock('quizzesBuilderContainer');
+            alert("تم إضافة الحصة بنجاح مع ملفات HTML للامتحان والإجابة!");
+            showSection('admin');
+        }
+    }
+
+    function openEditLessonModal() {
+        const cId = parseInt(document.getElementById('editCourseSelect').value);
+        const lIdx = parseInt(document.getElementById('editLessonSelect').value);
+
+        if (isNaN(lIdx)) {
+            alert("يرجى اختيار حصة صحيحة للتعديل!");
+            return;
+        }
+
+        const course = courses.find(c => c.id === cId);
+        const lesson = course.lessons[lIdx];
+
+        document.getElementById('editCourseId').value = cId;
+        document.getElementById('editLessonIdx').value = lIdx;
+        document.getElementById('editLTitle').value = lesson.title;
+        document.getElementById('editLDesc').value = lesson.desc || '';
+        document.getElementById('editPdfDesc').value = lesson.pdfDesc || '';
+        document.getElementById('editDocDesc').value = lesson.docDesc || '';
+
+        const vCont = document.getElementById('editVideoContainer');
+        vCont.innerHTML = '';
+        if (lesson.videos) {
+            lesson.videos.forEach(v => addVideoInput('editVideoContainer', v.name, v.desc, v.url));
+        }
+
+        const qCont = document.getElementById('editQuizzesContainer');
+        qCont.innerHTML = '';
+        if (lesson.quizzes) {
+            lesson.quizzes.forEach(q => {
+                addHtmlQuizBlock('editQuizzesContainer', q.title, q.desc, q.answerFileDesc || '');
+            });
+        }
+
+        document.getElementById('editLessonModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editLessonModal').classList.add('hidden');
+    }
+
+    function saveLessonEdits(e) {
+        e.preventDefault();
+        const cId = parseInt(document.getElementById('editCourseId').value);
+        const lIdx = parseInt(document.getElementById('editLessonIdx').value);
+        const course = courses.find(c => c.id === cId);
+        const lesson = course.lessons[lIdx];
+
+        lesson.title = document.getElementById('editLTitle').value.trim();
+        lesson.desc = document.getElementById('editLDesc').value.trim();
+        lesson.pdfDesc = document.getElementById('editPdfDesc').value.trim();
+        lesson.docDesc = document.getElementById('editDocDesc').value.trim();
+
+        const pdfFile = document.getElementById('editPdfFile').files[0];
+        if (pdfFile) lesson.pdf = URL.createObjectURL(pdfFile);
+
+        const docFile = document.getElementById('editDocFile').files[0];
+        if (docFile) lesson.doc = URL.createObjectURL(docFile);
+
+        let videos = [];
+        document.querySelectorAll('#editVideoContainer .video-input-row').forEach(row => {
+            videos.push({
+                name: row.querySelector('.vName').value.trim(),
+                desc: row.querySelector('.vDesc').value.trim(),
+                url: row.querySelector('.vUrl').value.trim()
+            });
+        });
+        lesson.videos = videos;
+
+        let quizzes = [];
+        const qBlocks = document.querySelectorAll('#editQuizzesContainer .quiz-html-block');
+        qBlocks.forEach((block, idx) => {
+            let qTitle = block.querySelector('.qBlockTitle').value.trim();
+            let qDesc = block.querySelector('.qBlockDesc').value.trim();
+            let ansDesc = block.querySelector('.qBlockAnswerDesc').value.trim();
+            
+            let htmlFile = block.querySelector('.qBlockHtmlFile').files[0];
+            let htmlUrl = htmlFile ? URL.createObjectURL(htmlFile) : (lesson.quizzes[idx]?.htmlUrl || null);
+
+            let ansFile = block.querySelector('.qBlockAnswerFile').files[0];
+            let ansUrl = ansFile ? URL.createObjectURL(ansFile) : (lesson.quizzes[idx]?.answerFile || null);
+
+            quizzes.push({
+                title: qTitle,
+                desc: qDesc,
+                htmlUrl: htmlUrl,
+                answerFile: ansUrl,
+                answerFileDesc: ansDesc
+            });
+        });
+        lesson.quizzes = quizzes;
+
+        saveState();
+        closeEditModal();
+        alert("تم حفظ تعديلات الحصة بنجاح!");
+    }
+
+    function deleteSelectedLesson() {
+        const cId = parseInt(document.getElementById('editCourseSelect').value);
+        const lIdx = parseInt(document.getElementById('editLessonSelect').value);
+        if (isNaN(lIdx)) {
+            alert("يرجى اختيار حصة للحذف!");
+            return;
+        }
+        if (confirm("هل أنت متأكد من حذف هذه الحصة نهائياً؟")) {
+            const course = courses.find(c => c.id === cId);
+            course.lessons.splice(lIdx, 1);
+            saveState();
+            populateEditLessonSelect();
+            alert("تم حذف الحصة بنجاح!");
+        }
+    }
+</script>
+</body>
+</html>
